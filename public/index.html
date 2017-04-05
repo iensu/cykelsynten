@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <title>My Awesome Cycle.js app</title>
+  <style>
+   ul {
+     overflow: hidden;
+     width: 720px;
+   }
+   li {
+     list-style: none;
+     height: 300px;
+     width: 90px;
+     float:left;
+   }
+   button{
+     display: block;
+     border: 2px solid black;
+     height: 100%;
+     width: 100%;
+     background: white;
+   }
+   button:focus,
+   li:not(:last-child) button:focus{
+     outline: none;
+     background: rgb(250, 200, 0);
+     color: black;
+   }
+   li:not(:last-child) button {
+     border-right: none;
+   }
+   .sharp button,
+   .sharp:not(:last-child) button {
+     background: black;
+     color: white;
+     height: 65%;
+     border: 2px solid black;
+   }
+   .sharp {
+     width: 60px;
+     margin-left: -30px;
+     margin-right: -30px;
+     position: relative;
+     z-index: 1;
+   }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="bundle.js"></script>
+</body>
+</html>
