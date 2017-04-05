@@ -1,6 +1,7 @@
 import {div, button, input, label, li, option, select, ul} from '@cycle/dom'
 import xs from 'xstream'
 import sampleCombine from 'xstream/extra/sampleCombine'
+import debounce from 'xstream/extra/debounce'
 
 const F0 = 440; // A
 
@@ -18,7 +19,7 @@ const keyboardKeys = 'awsedftgyhujk';
 
 const audioContext = new AudioContext();
 
-const semitoneSteps = range(START_STEP, 12);
+const semitoneSteps = range(START_STEP, 13);
 
 export function App (sources) {
   const click$ = sources.DOM.select('.key')
@@ -28,17 +29,31 @@ export function App (sources) {
         .map(evt => keyboardKeys.indexOf(evt.key))
         .filter(i => i !== -1)
         .map(index => semitoneSteps[index])
+  const keyup$ = sources.DOM.select('body').events('keyup')
+        .map(evt => keyboardKeys.indexOf(evt.key))
+        .filter(i => i !== -1)
+        .map(index => semitoneSteps[index])
 
-  const note$ = xs.merge(keydown$, click$).map(toHertz);
+  const note$ = xs.merge(keydown$, click$).map(parseInt);
 
-  const oscillators$ = xs.combine(
+  const oscillatorControls$ = xs.combine(
     ...range(1, 3)
       .map(id => sources.DOM.select(`#oscillator-${id}`))
       .map(createOscillatorControlStream)
   );
 
-  const vtree$ = note$.compose(sampleCombine(oscillators$))
-        .map(playNote).startWith(null)
+  const oscillators$ = note$.compose(sampleCombine(oscillatorControls$))
+        .map(createOscillators);
+
+  const killNote$ = xs.merge(keyup$, click$.compose(debounce(500))).compose(sampleCombine(
+    oscillators$.compose(oscillatorsByNote)
+  ));
+
+  killNote$.subscribe({ next: stopOscillators });
+
+  const vtree$ = oscillators$
+        .map(({ oscillators }) => oscillators.map(o => o.start(audioContext.currentTime)))
+        .startWith(null)
         .map(() =>
              div([
                div('.oscillators', range(1, 3).map(renderOscillator)),
@@ -65,15 +80,12 @@ function createOscillatorControlStream(source) {
   const detune$ = source.select('.oscillator-controls__detune').events('click')
         .map(e => e.target.value)
         .startWith(0);
-  return xs.combine(waveform$, gain$, detune$).map(([waveform, gain, detune]) => ({
-    waveform,
-    gain,
-    detune
-  }));
+  return xs.combine(waveform$, gain$, detune$)
+    .map(([waveform, gain, detune]) => ({ waveform, gain, detune }));
 }
 
-function playNote([frequency, oscillators]) {
-  oscillators.map(({ gain, waveform, detune }) => {
+function createOscillators([note, oscillatorDefinitions]) {
+  const createOscillator = ({ detune, waveform, gain }) => {
     const gainNode = audioContext.createGain();
     gainNode.gain.value = gain;
     gainNode.connect(audioContext.destination);
@@ -81,13 +93,16 @@ function playNote([frequency, oscillators]) {
     const oscillator = audioContext.createOscillator();
     oscillator.type = waveform;
     oscillator.detune.value = detune;
-    oscillator.frequency.value = frequency;
+    oscillator.frequency.value = toHertz(note);
     oscillator.connect(gainNode);
     return oscillator;
-  }).forEach(oscillator => {
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 1);
-  });
+  }
+  const oscillators = oscillatorDefinitions.map(createOscillator);
+  return { note, oscillators };
+}
+
+function oscillatorsByNote(oscillators$) {
+  return oscillators$.fold((acc, { note, oscillators }) => Object.assign({}, acc, { [note]: oscillators }), {});
 }
 
 function range(start, count) {
@@ -113,6 +128,10 @@ function renderOscillator(id) {
       input('.oscillator-controls__detune', { attrs: { type: 'range', min: -100, max: 100, step: 1, value: 0 }})
     ])
   ]);
+}
+
+function stopOscillators([ note, noteToOscillators ]) {
+  return noteToOscillators[note].map(o => o.stop(audioContext.currentTime));
 }
 
 function toHertz(semitoneStep) {
