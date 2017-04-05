@@ -1,31 +1,50 @@
 import {div, button, li, ul} from '@cycle/dom'
 import xs from 'xstream'
 
-const semitoneSteps = [
-  { step:  3, note:  'C' },
-  { step:  4, note: 'C#' },
-  { step:  5, note:  'D' },
-  { step:  6, note: 'Eb' },
-  { step:  7, note:  'E' },
-  { step:  8, note:  'F' },
-  { step:  9, note: 'F#' },
-  { step: 10, note:  'G' },
-  { step: 11, note: 'G#' },
-  { step: 12, note:  'A' },
-  { step: 13, note: 'Bb' },
-  { step: 14, note:  'B' },
-  { step: 15, note:  'C' }
-]
+const F0 = 440; // A
+
+const START_STEP = 3; // C
+
+const NOTE_STRINGS = [
+  'A', 'Bb', 'B', 'C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'G#'
+];
+
+const keyboardKeys = 'awsedftgyhujk';
 
 const audioContext = new AudioContext();
 
-const toHertz = f0 => semitoneStep => {
-  const a = Math.pow(2, 1/12);
-  return f0 * Math.pow(a, semitoneStep);
+const semitoneSteps = range(START_STEP, START_STEP + 12);
+
+function renderKey(step) {
+  const note = NOTE_STRINGS[step % 12];
+  const cssClass = note.match(/[b#]$/) ? '.sharp' : '';
+  return li(cssClass, button('.key', { attrs: { id: step } }, note))
 }
 
-const playNote = (semitoneStep) => {
-  const note = toHertz(440)(semitoneStep);
+export function App (sources) {
+  const click$ = sources.DOM.select('.key')
+        .events('click')
+        .map(evt => evt.target.id);
+  const keydown$ = sources.DOM.select('body').events('keydown')
+        .map(evt => keyboardKeys.indexOf(evt.key))
+        .filter(i => i !== -1)
+        .map(index => semitoneSteps[index])
+
+  const vtree$ = xs.merge(keydown$, click$)
+          .map(playNote).startWith(null)
+          .map(() => ul(semitoneSteps.map(renderKey)));
+
+  const sinks = {
+    DOM: vtree$
+  }
+
+  return sinks
+}
+
+// HELPER FUNCTIONS
+
+function playNote(semitoneStep) {
+  const note = toHertz(semitoneStep);
   const osc = audioContext.createOscillator();
   osc.frequency.value = note;
   osc.connect(audioContext.destination);
@@ -33,30 +52,11 @@ const playNote = (semitoneStep) => {
   osc.stop(audioContext.currentTime + 1);
 }
 
-const clickStream = (sources) => (select, valueFn) => sources.DOM.select(select).events('click').map(valueFn);
+function range(start, end) {
+  return Array.from(new Array(end - start), (_, idx) => idx + start);
+}
 
-const semitoneKeys = 'awsedftgyhujk';
-
-const key = ({ step, note, sharp }) =>
-      li(note.match(/[b#]$/) ? '.sharp' : '',
-        button(`.key`, { attrs: { id: step, value: step } }, note)
-      )
-
-export function App (sources) {
-  const click$ = sources.DOM.select('.key')
-        .events('click')
-        .map(evt => evt.target.value);
-  const keydown$ = sources.DOM.select('body').events('keydown')
-        .map(evt => semitoneKeys.indexOf(evt.key))
-        .filter(i => i !== -1)
-        .map(index => semitoneSteps[index].step)
-
-  const vtree$ = xs.merge(keydown$, click$).map(playNote).startWith(null)
-        .map(() => ul(semitoneSteps.map(key)));
-
-  const sinks = {
-    DOM: vtree$
-  }
-
-  return sinks
+function toHertz(semitoneStep) {
+  const a = 2 ** (1/12);
+  return F0 * (a ** semitoneStep);
 }
