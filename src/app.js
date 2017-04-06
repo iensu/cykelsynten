@@ -25,16 +25,15 @@ export function App (sources) {
   const click$ = sources.DOM.select('.key')
         .events('click')
         .map(evt => evt.target.id);
-  const keydown$ = sources.DOM.select('body').events('keydown')
-        .map(evt => keyboardKeys.indexOf(evt.key))
-        .filter(i => i !== -1)
-        .map(index => semitoneSteps[index])
-  const keyup$ = sources.DOM.select('body').events('keyup')
-        .map(evt => keyboardKeys.indexOf(evt.key))
-        .filter(i => i !== -1)
-        .map(index => semitoneSteps[index])
+  const keydown$ = sources.DOM.select('body').events('keydown');
 
-  const note$ = xs.merge(keydown$, click$).map(parseInt);
+
+  const keyup$ = sources.DOM.select('body').events('keyup')
+
+  const note$ = xs.merge(
+    keydown$.compose(pianoKeyPresses),
+    click$
+  ).map(parseInt);
 
   const oscillatorControls$ = xs.combine(
     ...range(1, 3)
@@ -45,9 +44,12 @@ export function App (sources) {
   const oscillators$ = note$.compose(sampleCombine(oscillatorControls$))
         .map(createOscillators);
 
-  const killNote$ = xs.merge(keyup$, click$.compose(debounce(500))).compose(sampleCombine(
-    oscillators$.compose(oscillatorsByNote)
-  ));
+  const oscillatorsByNote$ = oscillators$.compose(oscillatorsByNote);
+
+  const killNote$ = xs.merge(
+    keyup$.compose(pianoKeyPresses),
+    click$.compose(debounce(500))
+  ).compose(sampleCombine(oscillatorsByNote$));
 
   killNote$.subscribe({ next: stopOscillators });
 
@@ -103,6 +105,13 @@ function createOscillators([note, oscillatorDefinitions]) {
 
 function oscillatorsByNote(oscillators$) {
   return oscillators$.fold((acc, { note, oscillators }) => Object.assign({}, acc, { [note]: oscillators }), {});
+}
+
+function pianoKeyPresses(keypress$) {
+  return keypress$
+    .map(evt => keyboardKeys.indexOf(evt.key))
+    .filter(i => i !== -1)
+    .map(index => semitoneSteps[index])
 }
 
 function range(start, count) {
