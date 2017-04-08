@@ -1,41 +1,49 @@
-import {div, button, input, label, li, option, select, ul} from '@cycle/dom'
-import xs from 'xstream'
-
-function handleEvent(selector, event, fn = e => e.target.value) {
-  return (domSource$) => domSource$.select(selector).events(event).map(fn);
-}
+import {div, span } from '@cycle/dom'
+import isolate from '@cycle/isolate';
+import Rx from 'rxjs/Rx';
+import { waveforms } from '../constants';
+import LabeledSlider from './LabeledSlider';
+import LabeledSelector from './LabeledSelector';
 
 export default function Oscillator(sources) {
+  const Waveform = isolate(LabeledSelector);
+  const Gain = isolate(LabeledSlider);
+  const Detune = isolate(LabeledSlider);
 
-  const waveform$ = sources.DOM.compose(handleEvent('.oscillator-controls__waveform', 'change'));
-  const gain$ = sources.DOM.compose(handleEvent('.oscillator-controls__gain', 'click'));
-  const detune$ = sources.DOM.compose(handleEvent('.oscillator-controls__detune', 'click'));
+  const controls$ = sources.props
+        .map(({ waveform, detune, gain }) => [
+          Waveform({
+            DOM: sources.DOM,
+            props: Rx.Observable.of({ label: 'Waveform', options: waveforms, value: waveform })
+          }),
+          Gain({
+            DOM: sources.DOM,
+            props: Rx.Observable.of({ label: 'Gain', min: 0, max: 1, step: 0.01, value: gain })
+          }),
+          Detune({
+            DOM: sources.DOM,
+            props: Rx.Observable.of({ label: 'Detune', min: -3.5, max: 3.5, step: 0.01, value: detune })
+          })
+        ]);
 
-  const value$ = xs.combine(waveform$, gain$, detune$)
-        .map(([ waveform, gain, detune ]) => ({
+  const value$ = controls$
+        .flatMap(controls => Rx.Observable.combineLatest(...controls.map(c => c.value)))
+        .map(([waveform, gain, detune]) => ({
           waveform, gain, detune
-        }));
+        }))
+        .publishReplay(1).refCount();
 
-  const state$ = sources.props
-        .map(props => value$.startWith(props)).flatten();
+  const vdom$ = controls$.
+        flatMap(controls => Rx.Observable.combineLatest(sources.props, ...controls.map(c => c.DOM)))
+        .map(([props, ...controlsVdom]) => (
+          div('.oscillator', [
+            span('.label', props.label),
+            div('.oscillator-controls', controlsVdom)
+          ])
+        ));
 
-  const vdom$ = state$.map(({ waveform, gain, detune }) => (
-    div('.oscillator',
-      div('.oscillator-controls', [
-        label('Waveform'),
-        select('.oscillator-controls__waveform', WAVEFORMS.map((val, idx) => option({ attrs: { value: waveform }}, val))),
-        label('Gain'),
-        input('.oscillator-controls__gain', { attrs: { type: 'range', min: 0, max: 1, step: 0.01, value: gain }}),
-        label('Detune'),
-        input('.oscillator-controls__detune', { attrs: { type: 'range', min: -100, max: 100, step: 1, value: detune }})
-      ])
-    )
-  ));
-
-  const sinks = {
+  return {
     DOM: vdom$,
     value: value$
   };
-
-  return sinks;
 }
