@@ -17,16 +17,18 @@ function keyToSteps(keySource$) {
 }
 
 export function App(sources) {
-  const oscillator = Oscillator({
-    DOM: sources.DOM,
-    props: Rx.Observable.of({
-      waveform: 'triangle',
-      detune: 1.32,
-      gain: 0.32,
-      label: 'Osc1'
-    })
-  });
   const keyboard = Keyboard({ DOM: sources.DOM });
+  const oscillators = [1, 2, 3].map(id => (
+    isolate(Oscillator)({
+      DOM: sources.DOM,
+      props: Rx.Observable.of({
+        waveform: 'square',
+        detune: 0,
+        gain: 0.5,
+        label: `osc-${id}`
+      })
+    })
+  ));
 
   const play$ = Rx.Observable.merge(
     keyboard.value,
@@ -44,14 +46,18 @@ export function App(sources) {
       type: 'frequency',
       payload: { value: frequency, stop: true }
     })),
-    oscillator.value.map(oscillatorValues => ({
-      type: 'oscillator',
+    ...oscillators.map((o, idx) => o.value.map(oscillatorValues => ({
+      type: `oscillator-${idx + 1}`,
       payload: oscillatorValues
-    }))
+    })))
   );
 
-  const vdom$ = Rx.Observable.combineLatest(oscillator.DOM, keyboard.DOM)
-        .map((vdom) => div('.synth', vdom));
+  const vdom$ = Rx.Observable.combineLatest(keyboard.DOM, ...oscillators.map(o => o.DOM))
+        .map(([keyboardDOM, ...oscillatorDOMs]) => (
+          div('.synth', [
+            div('.synth-oscillators', oscillatorDOMs),
+            keyboardDOM
+          ])));
 
   return {
     DOM: vdom$,

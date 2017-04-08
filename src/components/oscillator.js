@@ -22,14 +22,14 @@ export default function Oscillator(sources) {
           }),
           Detune({
             DOM: sources.DOM,
-            props: Rx.Observable.of({ label: 'Detune', min: -3.5, max: 3.5, step: 0.01, value: detune })
+            props: Rx.Observable.of({ label: 'Detune', min: -100, max: 100, step: 1, value: detune })
           })
         ]);
 
   const value$ = controls$
-        .flatMap(controls => Rx.Observable.combineLatest(...controls.map(c => c.value)))
-        .map(([waveform, gain, detune]) => ({
-          waveform, gain, detune
+        .flatMap(controls => Rx.Observable.combineLatest(sources.props, ...controls.map(c => c.value)))
+        .map(([props, waveform, gain, detune]) => ({
+          label: props.label, waveform, gain, detune
         }))
         .publishReplay(1).refCount();
 

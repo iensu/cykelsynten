@@ -18,13 +18,15 @@ function createOscillator(audioContext) {
 }
 
 function playSound(audioContext) {
-  return ([ note, oscillatorConfig ]) => {
-    const oscillators = [oscillatorConfig].map(createOscillator(audioContext)).map(oscillator => {
+  return ([ note, oscillatorConfigs ]) => {
+    const oscillators = oscillatorConfigs.map(createOscillator(audioContext)).map(oscillator => {
       oscillator.frequency.value = note.value;
       oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 5);
+      oscillator.stop(audioContext.currentTime + 2);
+
       return oscillator;
     });
+
     return { id: note.value, oscillators };
   };
 }
@@ -32,18 +34,19 @@ function playSound(audioContext) {
 const WebAudioDriver = audioContext => (sink$) => {
   const instructions$ = Rx.Observable.from(sink$);
 
-  const oscillator$ = instructions$.filter(x => x.type === 'oscillator').map(x => x.payload);
+  const oscillators$ = Rx.Observable.combineLatest(
+    instructions$.filter(x => x.type === 'oscillator-1').map(x => x.payload),
+    instructions$.filter(x => x.type === 'oscillator-2').map(x => x.payload),
+    instructions$.filter(x => x.type === 'oscillator-3').map(x => x.payload)
+  );
   const frequency$ = instructions$.filter(x => x.type === 'frequency').map(x => x.payload);
 
   const startNote$ = frequency$.filter(x => x.start);
   const stopNote$ = frequency$.filter(x => x.stop);
-  const oscillators$ = startNote$.withLatestFrom(oscillator$);
 
-
-  const runningOscillators$ = oscillators$
+  const runningOscillators$ = startNote$.withLatestFrom(oscillators$)
         .map(playSound(audioContext))
-        .scan((idToOscillators, { id, oscillators }) => Object.assign(idToOscillators, { [id]: oscillators }), {})
-        .do(log('runningOscillators'));
+        .scan((idToOscillators, { id, oscillators }) => Object.assign(idToOscillators, { [id]: oscillators }), {});
 
   stopNote$.withLatestFrom(runningOscillators$)
     .forEach(([note, oscillators ]) => {
