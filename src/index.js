@@ -1,4 +1,4 @@
-import {run} from '@cycle/rxjs-run'
+import {run} from '@cycle/run'
 import {makeDOMDriver} from '@cycle/dom'
 import {App} from './app'
 import { makeWebAudioDriver } from './drivers/webAudioDriver';

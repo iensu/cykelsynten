@@ -5,15 +5,16 @@ export default function LabeledSelector(sources) {
         .map(e => e.target.value);
 
   const state$ = sources.props
-        .flatMap(props => value$
+        .map(props => value$
                  .map(value => ({
                    label: props.label,
                    options: props.options,
                    value
                  }))
                  .startWith(props)
-                )
-        .publishReplay(1).refCount();
+            )
+        .flatten()
+        .remember();
 
   const vdom$ = state$
         .map(({ value, options, label }) =>

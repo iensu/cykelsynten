@@ -6,7 +6,8 @@ const NOTE_STRINGS = [
 
 export default function Key(sources) {
   const value$ = sources.DOM.select('.key').events('click')
-        .flatMap(() => sources.props.map(({ step }) => step))
+        .map(() => sources.props.map(({ step }) => step))
+        .flatten();
 
   const vdom$ = sources.props.map(({ step }) => {
     const key = NOTE_STRINGS[step % 12];

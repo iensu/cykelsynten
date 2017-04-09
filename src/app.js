@@ -1,6 +1,6 @@
 import { button, div, li, ul } from '@cycle/dom';
 import isolate from '@cycle/isolate';
-import Rx from 'rxjs/Rx';
+import xs from 'xstream';
 import { log, toHertz } from './utils';
 import Keyboard from './components/Keyboard';
 import Oscillator from './components/Oscillator';
@@ -21,7 +21,7 @@ export function App(sources) {
   const oscillators = [1, 2, 3].map(id => (
     isolate(Oscillator)({
       DOM: sources.DOM,
-      props: Rx.Observable.of({
+      props: xs.of({
         waveform: 'square',
         detune: 0,
         gain: 0.5,
@@ -30,14 +30,14 @@ export function App(sources) {
     })
   ));
 
-  const play$ = Rx.Observable.merge(
+  const play$ = xs.merge(
     keyboard.value,
     keyToSteps(sources.DOM.select('body').events('keydown'))
   );
 
   const stop$ = keyToSteps(sources.DOM.select('body').events('keyup'));
 
-  const instructions$ = Rx.Observable.merge(
+  const instructions$ = xs.merge(
     play$.map(toHertz(440)).map(frequency => ({
       type: 'frequency',
       payload: { value: frequency, start: true }
@@ -52,7 +52,7 @@ export function App(sources) {
     })))
   );
 
-  const vdom$ = Rx.Observable.combineLatest(keyboard.DOM, ...oscillators.map(o => o.DOM))
+  const vdom$ = xs.combine(keyboard.DOM, ...oscillators.map(o => o.DOM))
         .map(([keyboardDOM, ...oscillatorDOMs]) => (
           div('.synth', [
             div('.synth-oscillators', oscillatorDOMs),

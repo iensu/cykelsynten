@@ -2,10 +2,11 @@ import { div, input, span } from '@cycle/dom';
 
 export default function LabeledSlider(sources) {
   const value$ = sources.DOM.select('.slider').events('change')
-        .map(e => e.target.value);
+        .map(e => e.target.value)
+        .map(parseFloat);
 
   const state$ = sources.props
-        .flatMap(props => value$
+        .map(props => value$
                  .map(value => ({
                    label: props.label,
                    min: props.min,
@@ -15,7 +16,8 @@ export default function LabeledSlider(sources) {
                  }))
                  .startWith(props)
                 )
-        .publishReplay(1).refCount();
+        .flatten()
+        .remember();
 
   const vdom$ = state$
         .map(({ value, label, min, max, step }) =>

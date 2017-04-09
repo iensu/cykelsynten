@@ -1,5 +1,6 @@
-import Rx from 'rxjs/Rx';
 import { adapt } from '@cycle/run/lib/adapt';
+import xs from 'xstream';
+import sampleCombine from 'xstream/extra/sampleCombine';
 import { log } from '../utils';
 
 function createOscillator(audioContext) {
@@ -33,28 +34,26 @@ function playSound(audioContext) {
   };
 }
 
-const WebAudioDriver = audioContext => (sink$) => {
-  const instructions$ = Rx.Observable.from(sink$);
-
+const WebAudioDriver = audioContext => (instructions$) => {
   const oscillators$ = instructions$.filter(x => x.type === 'oscillator').map(x => x.payload)
-        .startWith({})
-        .scan((oscillators, oscillator) => Object.assign({}, oscillators, {
+        .fold((oscillators, oscillator) => Object.assign({}, oscillators, {
           [oscillator.label]: oscillator
-        }))
-        .do(log('oscillators'));
+        }), {})
   const frequency$ = instructions$.filter(x => x.type === 'frequency').map(x => x.payload);
 
   const startNote$ = frequency$.filter(x => x.start);
   const stopNote$ = frequency$.filter(x => x.stop);
 
-  const runningOscillators$ = startNote$.withLatestFrom(oscillators$)
+  const runningOscillators$ = startNote$.compose(sampleCombine(oscillators$))
         .map(playSound(audioContext))
-        .scan((idToOscillators, { id, oscillators }) => Object.assign(idToOscillators, { [id]: oscillators }), {});
+        .fold((idToOscillators, { id, oscillators }) => Object.assign(idToOscillators, { [id]: oscillators }), {});
 
-  stopNote$.withLatestFrom(runningOscillators$)
-    .forEach(([note, oscillators ]) => {
-      const oscs = oscillators[note.value];
-      oscs.map(o => o.stop(audioContext.currentTime));
+  stopNote$.compose(sampleCombine(runningOscillators$))
+    .subscribe({
+      next: ([note, oscillators ]) => {
+        const oscs = oscillators[note.value];
+        oscs.map(o => o.stop(audioContext.currentTime));
+      }
     });
 
   return adapt(oscillators$);
