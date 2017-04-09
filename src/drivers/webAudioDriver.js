@@ -19,13 +19,15 @@ function createOscillator(audioContext) {
 
 function playSound(audioContext) {
   return ([ note, oscillatorConfigs ]) => {
-    const oscillators = oscillatorConfigs.map(createOscillator(audioContext)).map(oscillator => {
-      oscillator.frequency.value = note.value;
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 2);
+    const oscillators = Object.keys(oscillatorConfigs)
+          .map(key => oscillatorConfigs[key])
+          .map(createOscillator(audioContext)).map(oscillator => {
+            oscillator.frequency.value = note.value;
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 2);
 
-      return oscillator;
-    });
+            return oscillator;
+          });
 
     return { id: note.value, oscillators };
   };
@@ -34,11 +36,12 @@ function playSound(audioContext) {
 const WebAudioDriver = audioContext => (sink$) => {
   const instructions$ = Rx.Observable.from(sink$);
 
-  const oscillators$ = Rx.Observable.combineLatest(
-    instructions$.filter(x => x.type === 'oscillator-1').map(x => x.payload),
-    instructions$.filter(x => x.type === 'oscillator-2').map(x => x.payload),
-    instructions$.filter(x => x.type === 'oscillator-3').map(x => x.payload)
-  );
+  const oscillators$ = instructions$.filter(x => x.type === 'oscillator').map(x => x.payload)
+        .startWith({})
+        .scan((oscillators, oscillator) => Object.assign({}, oscillators, {
+          [oscillator.label]: oscillator
+        }))
+        .do(log('oscillators'));
   const frequency$ = instructions$.filter(x => x.type === 'frequency').map(x => x.payload);
 
   const startNote$ = frequency$.filter(x => x.start);

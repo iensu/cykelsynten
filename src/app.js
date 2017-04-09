@@ -47,7 +47,7 @@ export function App(sources) {
       payload: { value: frequency, stop: true }
     })),
     ...oscillators.map((o, idx) => o.value.map(oscillatorValues => ({
-      type: `oscillator-${idx + 1}`,
+      type: 'oscillator',
       payload: oscillatorValues
     })))
   );
