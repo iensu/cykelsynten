@@ -1,62 +1,98 @@
 import { adapt } from '@cycle/run/lib/adapt';
 import xs from 'xstream';
 import sampleCombine from 'xstream/extra/sampleCombine';
-import { log } from '../utils';
+import pairwise from 'xstream/extra/pairwise'
+import { toHertz } from '../utils';
 
-function createOscillator(audioContext) {
-  return ({ gain, waveform, detune }) => {
-    const gainNode = audioContext.createGain();
-    gainNode.gain.value = gain;
-    gainNode.connect(audioContext.destination);
-
+function createOscillator(audioContext, note) {
+  return (config) => {
+    const gainNode = createGain(audioContext)(config);
     const oscillator = audioContext.createOscillator();
-    oscillator.type = waveform;
-    oscillator.detune.value = detune;
+
+    oscillator.type = config.waveform;
+    oscillator.detune.value = config.detune;
+    oscillator.frequency.value = toHertz(440)(note);
+
     oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
 
     return oscillator;
   };
 }
 
-function playSound(audioContext) {
-  return ([ note, oscillatorConfigs ]) => {
-    const oscillators = Object.keys(oscillatorConfigs)
-          .map(key => oscillatorConfigs[key])
-          .map(createOscillator(audioContext)).map(oscillator => {
-            oscillator.frequency.value = note.value;
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 2);
+function createGain(audioContext) {
+  return ({ gain }) => {
+    const gainNode = audioContext.createGain();
+    gainNode.gain.value = gain;
+    return gainNode;
+  }
+}
 
-            return oscillator;
-          });
+function setupOscillators(audioContext) {
+  return ([ notes, oscillatorSettings ]) => {
+    return notes.value
+      .map(note => {
+        const oscillators = Object.keys(oscillatorSettings)
+              .map(key => oscillatorSettings[key])
+              .map(createOscillator(audioContext, note))
 
-    return { id: note.value, oscillators };
+        return { note, oscillators };
+      })
+      .reduce((result, { note, oscillators }) => Object.assign({}, result, {
+        [note]: oscillators
+      }), {});
   };
 }
 
+const tryStop = (oscillator) => {
+  try {
+    oscillator.stop();
+  } catch (e) {
+    if (e.code !== 11) throw e; // 11 = Oscillator not started!
+    oscillator.start();
+    oscillator.stop();
+  }
+}
+
 const WebAudioDriver = audioContext => (instructions$) => {
-  const oscillators$ = instructions$.filter(x => x.type === 'oscillator').map(x => x.payload)
+  const oscillatorSettings$ = instructions$
+        .filter(x => x.type === 'oscillator')
+        .map(x => x.payload)
         .fold((oscillators, oscillator) => Object.assign({}, oscillators, {
           [oscillator.label]: oscillator
-        }), {})
-  const frequency$ = instructions$.filter(x => x.type === 'frequency').map(x => x.payload);
+        }));
 
-  const startNote$ = frequency$.filter(x => x.start);
-  const stopNote$ = frequency$.filter(x => x.stop);
+  const notes$ = instructions$
+        .filter(x => x.type === 'notes')
+        .map(x => x.payload)
 
-  const runningOscillators$ = startNote$.compose(sampleCombine(oscillators$))
-        .map(playSound(audioContext))
-        .fold((idToOscillators, { id, oscillators }) => Object.assign(idToOscillators, { [id]: oscillators }), {});
+  const oscillators$ = notes$
+        .compose(sampleCombine(oscillatorSettings$))
+        .map(setupOscillators(audioContext))
 
-  stopNote$.compose(sampleCombine(runningOscillators$))
+  oscillators$
+    .compose(pairwise)
     .subscribe({
-      next: ([note, oscillators ]) => {
-        const oscs = oscillators[note.value];
-        oscs.map(o => o.stop(audioContext.currentTime));
-      }
+      next: ([prevOscillators, currOscillators]) => {
+        const currNotes = Object.keys(currOscillators);
+        const prevNotes = Object.keys(prevOscillators);
+        const toStart = currNotes.filter(n => !prevNotes.includes(n));
+        const toStop = prevNotes.filter(n => !currNotes.includes(n));
+        console.log(toStart, toStop)
+
+        toStop.forEach(note => prevOscillators[note].map(tryStop));
+        toStart.forEach(note => currOscillators[note].map(o => {
+          o.start();
+          o.stop(audioContext.currentTime + 3);
+        }))
+      },
+      error: e => console.log(e.code)
     });
 
-  return adapt(oscillators$);
+  return {
+    notes: notes$.map(n => n.value),
+    oscillatorSettings: oscillatorSettings$
+  }
 };
 
 

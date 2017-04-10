@@ -36,7 +36,6 @@ export default function Oscillator(sources) {
         .remember();
 
   const vdom$ = controls$
-        .debug()
         .map(controls => xs.combine(props$, ...controls.map(c => c.DOM)))
         .flatten()
         .map(([props, ...controlsVdom]) => (

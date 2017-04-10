@@ -31,25 +31,28 @@ export function App(sources) {
   ));
 
   const play$ = xs.merge(
-    keyboard.value,
+    keyboard.play,
     keyToSteps(sources.DOM.select('body').events('keydown'))
-  );
+  ).map(step => ({ add: true, step }));
 
-  const stop$ = keyToSteps(sources.DOM.select('body').events('keyup'));
+  const stop$ = xs.merge(
+    keyboard.stop,
+    keyToSteps(sources.DOM.select('body').events('keyup'))
+  ).map(step => ({ remove: true, step }))
+
+  const notes$ = xs
+        .merge(play$, stop$)
+        .fold((activeSteps, { add, step }) => add && !activeSteps.includes(step) ? [...activeSteps, step] : activeSteps.filter(s => s !== step), []);
 
   const instructions$ = xs.merge(
-    play$.map(toHertz(440)).map(frequency => ({
-      type: 'frequency',
-      payload: { value: frequency, start: true }
-    })),
-    stop$.map(toHertz(440)).map(frequency => ({
-      type: 'frequency',
-      payload: { value: frequency, stop: true }
-    })),
     ...oscillators.map((o, idx) => o.value.map(oscillatorValues => ({
       type: 'oscillator',
       payload: oscillatorValues
-    })))
+    }))),
+    notes$.map(notes => ({
+      type: 'notes',
+      payload: { value: notes }
+    }))
   );
 
   const vdom$ = xs.combine(keyboard.DOM, ...oscillators.map(o => o.DOM))

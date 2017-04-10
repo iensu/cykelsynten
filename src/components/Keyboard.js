@@ -1,6 +1,7 @@
 import { ul } from '@cycle/dom';
 import isolate from '@cycle/isolate';
 import xs from 'xstream';
+import delay from 'xstream/extra/delay';
 import Key from './key';
 
 const baseStep = 3; // 0 = A, 3 = C
@@ -13,13 +14,16 @@ export default function Keyboard(sources) {
           props: xs.of({ step: step + baseStep })
         }));
 
-  const value$ = xs.merge(...keys.map(key => key.value));
+  const play$ = xs.merge(...keys.map(key => key.value));
+
+  const stop$ = play$.compose(delay(500));
 
   const vdom$ = xs.combine(...keys.map(key => key.DOM))
         .map((keyDoms) => ul(keyDoms));
 
   return {
     DOM: vdom$,
-    value: value$
+    play: play$,
+    stop: stop$
   };
 }
