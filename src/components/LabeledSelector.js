@@ -1,4 +1,4 @@
-import { div, option, select, span } from '@cycle/dom';
+import { div, option, label, select } from '@cycle/dom';
 
 export default function LabeledSelector(sources) {
   const value$ = sources.DOM.select('.selector').events('change')
@@ -7,7 +7,7 @@ export default function LabeledSelector(sources) {
   const state$ = sources.props
         .map(props => value$
                  .map(value => ({
-                   label: props.label,
+                   labeltext: props.labeltext,
                    options: props.options,
                    value
                  }))
@@ -16,10 +16,11 @@ export default function LabeledSelector(sources) {
         .flatten()
         .remember();
 
+      console.log({state$})
   const vdom$ = state$
-        .map(({ value, options, label }) =>
+        .map(({ value, options, labeltext }) =>
              div('.labeled-selector', [
-               span('.label', label),
+               label(labeltext),
                select('.selector', options.map(opt => (
                  option({ attrs: { value: opt, selected: opt === value } }, opt)
                )))

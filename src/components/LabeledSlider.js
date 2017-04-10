@@ -1,4 +1,4 @@
-import { div, input, span } from '@cycle/dom';
+import { div, label, input } from '@cycle/dom';
 
 export default function LabeledSlider(sources) {
   const value$ = sources.DOM.select('.slider').events('change')
@@ -8,7 +8,7 @@ export default function LabeledSlider(sources) {
   const state$ = sources.props
         .map(props => value$
                  .map(value => ({
-                   label: props.label,
+                   labeltext: props.labeltext,
                    min: props.min,
                    max: props.max,
                    step: props.step,
@@ -20,9 +20,9 @@ export default function LabeledSlider(sources) {
         .remember();
 
   const vdom$ = state$
-        .map(({ value, label, min, max, step }) =>
+        .map(({ value, labeltext, min, max, step }) =>
              div('.labeled-slider', [
-               span('.label', label),
+               label('.label', labeltext),
                input('.slider', { attrs: { type: 'range', min, max, step, value } })
              ])
             );

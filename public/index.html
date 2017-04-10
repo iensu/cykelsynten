@@ -8,49 +8,145 @@
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <title>My Awesome Cycle.js app</title>
   <style>
-   body, html {
-     font-family: 'helvetica', 'arial', sans-serif;
-   }
-   ul {
-     overflow: hidden;
-     width: 720px;
-   }
-   li {
-     list-style: none;
-     height: 300px;
-     width: 90px;
-     float:left;
-   }
-   button{
-     display: block;
-     border: 2px solid black;
-     height: 100%;
-     width: 100%;
-     background: white;
-   }
-   button:focus,
-   li:not(:last-child) button:focus{
-     outline: none;
-     background: rgb(250, 200, 0);
-     color: black;
-   }
-   li:not(:last-child) button {
-     border-right: none;
-   }
-   .sharp button,
-   .sharp:not(:last-child) button {
-     background: black;
-     color: white;
-     height: 65%;
-     border: 2px solid black;
-   }
-   .sharp {
-     width: 60px;
-     margin-left: -30px;
-     margin-right: -30px;
-     position: relative;
-     z-index: 1;
-   }
+    body, html {
+      font-family: 'helvetica', 'arial', sans-serif;
+      background: white;
+    }
+    .synth {
+      width: 90%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 0;
+    }
+    ul {
+      overflow: hidden;
+      width: 720px;
+      margin: 0 auto;
+      padding: 0;
+    }
+    li {
+      list-style: none;
+      height: 300px;
+      width: 90px;
+      float: left;
+    }
+    button {
+      display: block;
+      border: 5px solid #222;
+      height: 100%;
+      width: 100%;
+      background: white;
+    }
+    button:focus, li:not(:last-child) button:focus {
+      outline: none;
+      background: rgb(250, 200, 0);
+      color: #222;
+    }
+    li:not(:last-child) button {
+      border-right: none;
+    }
+    .sharp button, .sharp:not(:last-child) button {
+      background: #222;
+      color: white;
+      height: 65%;
+      border: 5px solid #222;
+      border-radius: 5px;
+    }
+    .sharp {
+      width: 60px;
+      margin-left: -30px;
+      margin-right: -30px;
+      position: relative;
+      z-index: 1;
+    }
+    .synth-oscillators {
+      overflow: hidden;
+      margin-bottom: 40px;
+    }
+    .oscillator {
+      width: 400px;
+      float: left;
+    }
+    .labeled-slider, .labeled-selector {
+      padding: 10px 0 15px;
+    }
+    .labeled-selector {
+      position: relative;
+    }
+    .labeled-selector:after {
+      content: '';
+      position: absolute;
+      left: 95px;
+      top: 60px;
+      width: 0;
+      height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-top: 10px solid #222;
+      z-index: 1;
+    }
+    .labeled-slider label,
+    .labeled-selector label {
+      display: block;
+    }
+    .labeled-selector label,
+    .labeled-slider label {
+      padding-bottom: 15px;
+    }
+    fieldset {
+      border: none;
+      padding: 0;
+      margin: 0;
+    }
+    legend {
+      font-size: 1.6em;
+      margin: 0;
+      padding: 0 0 10px;
+    }
+    select {
+      display: inline-block;
+      padding: 10px 40px 10px 15px;
+      border: 3px solid #222;
+      border-radius: 0;
+      font-size: 1em;
+      background: transparent;
+      color: #222;
+      outline: 0;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      position: relative;
+      z-index: 2;
+    }
+    select:focus {
+      border-color: #e74c3c;
+    }
+    input[type="range"] {
+      display: block;
+      -webkit-appearance: none;
+      background-color: #222;
+      width: 300px;
+      height: 5px;
+      border-radius: 5px;
+      outline: 0;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      background-color: #e74c3c;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 2px solid white;
+      cursor: pointer;
+      transition: .3s ease-in-out;
+    }
+    ​ input[type="range"]::-webkit-slider-thumb:hover {
+      background-color: white;
+      border: 2px solid #e74c3c;
+    }
+    input[type="range"]::-webkit-slider-thumb:active {
+      transform: scale(1.1);
+    }
   </style>
 </head>
 <body>
