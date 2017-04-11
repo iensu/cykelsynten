@@ -62,9 +62,10 @@
     .synth-oscillators {
       overflow: hidden;
       margin-bottom: 40px;
+      padding-left: 100px;
     }
     .oscillator {
-      width: 400px;
+      width: 350px;
       float: left;
     }
     .labeled-slider, .labeled-selector {
@@ -128,7 +129,24 @@
       width: 300px;
       height: 5px;
       border-radius: 5px;
-      outline: 0;
+      outline: none;
+    }
+    input[type="range"]::-moz-range-thumb {
+      background-color: #e74c3c;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 2px solid white;
+      cursor: pointer;
+      transition: .3s ease-in-out;
+    }
+    input[type="range"]::-moz-range-track {
+      display: block;
+      background-color: #222;
+      width: 300px;
+      height: 5px;
+      border-radius: 5px;
+      outline: none;
     }
     input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
@@ -140,10 +158,12 @@
       cursor: pointer;
       transition: .3s ease-in-out;
     }
-    ​ input[type="range"]::-webkit-slider-thumb:hover {
+    ​input[type="range"]::-webkit-slider-thumb:hover,
+    input[type="range"]::-webkit-slider-thumb:focus {
       background-color: white;
       border: 2px solid #e74c3c;
     }
+    input[type="range"]::-webkit-slider-thumb:focus,
     input[type="range"]::-webkit-slider-thumb:active {
       transform: scale(1.1);
     }

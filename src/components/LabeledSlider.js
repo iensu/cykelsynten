@@ -19,11 +19,12 @@ export default function LabeledSlider(sources) {
         .flatten()
         .remember();
 
+  const id = Math.random().toString(36).slice(2);
   const vdom$ = state$
         .map(({ value, labeltext, min, max, step }) =>
              div('.labeled-slider', [
-               label('.label', labeltext),
-               input('.slider', { attrs: { type: 'range', min, max, step, value } })
+               label('.label', { attrs: { for: `${id}`}}, labeltext),
+               input('.slider', { attrs: { id: `${id}`, type: 'range', min, max, step, value } })
              ])
             );
 

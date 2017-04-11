@@ -16,12 +16,12 @@ export default function LabeledSelector(sources) {
         .flatten()
         .remember();
 
-      console.log({state$})
+  const id = Math.random().toString(36).slice(2);
   const vdom$ = state$
         .map(({ value, options, labeltext }) =>
              div('.labeled-selector', [
-               label(labeltext),
-               select('.selector', options.map(opt => (
+               label({ attrs: { for: `${id}`}}, labeltext),
+               select('.selector', { attrs: { id: `${id}`}}, options.map(opt => (
                  option({ attrs: { value: opt, selected: opt === value } }, opt)
                )))
              ])
