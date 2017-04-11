@@ -9,7 +9,7 @@ export default function Key(sources) {
         .map(() => sources.props.map(({ step }) => step))
         .flatten();
 
-  const vdom$ = sources.props.map(({ step }) => {
+  const vdom$ = sources.props.debug().map(({ step }) => {
     const key = NOTE_STRINGS[step % 12];
     const cssClass = key.match(/[b#]$/) ? '.sharp' : '';
 

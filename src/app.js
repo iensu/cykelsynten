@@ -17,7 +17,10 @@ function keyToSteps(keySource$) {
 }
 
 export function App(sources) {
-  const keyboard = Keyboard({ DOM: sources.DOM });
+  const keyboard = Keyboard({
+    DOM: sources.DOM,
+    playingNotes: sources.Audio.notes
+  });
   const oscillators = [1, 2, 3].map(id => (
     isolate(Oscillator)({
       DOM: sources.DOM,

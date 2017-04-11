@@ -11,7 +11,10 @@ export default function Keyboard(sources) {
   const keys = Array.from(new Array(13), (_, idx) => idx)
         .map(step => isolate(Key)({
           DOM: sources.DOM,
-          props: xs.of({ step: step + baseStep })
+          props: sources.playingNotes.map(notes => ({
+            step: step + baseStep,
+            isPressed: notes.includes(step + baseStep)
+          }))
         }));
 
   const play$ = xs.merge(...keys.map(key => key.value));
