@@ -1,4 +1,5 @@
 import {li, button} from '@cycle/dom';
+import {classnames} from '../utils';
 
 const NOTE_STRINGS = [
   'A', 'Bb', 'B', 'C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'G#'
@@ -9,11 +10,15 @@ export default function Key(sources) {
         .map(() => sources.props.map(({ step }) => step))
         .flatten();
 
-  const vdom$ = sources.props.debug().map(({ step }) => {
+  const vdom$ = sources.props.map(({ step, isPressed }) => {
     const key = NOTE_STRINGS[step % 12];
-    const cssClass = key.match(/[b#]$/) ? '.sharp' : '';
+    const classes = classnames({
+      '.sharp': key.match(/[b#]$/),
+      '.pressed': isPressed
+    });
+    console.log(classes);
 
-    return li(cssClass, button('.key', key))
+    return li(classes, button('.key', key))
   })
 
   return {

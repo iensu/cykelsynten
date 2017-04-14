@@ -35,12 +35,12 @@ export function App(sources) {
 
   const play$ = xs.merge(
     keyboard.play,
-    keyToSteps(sources.DOM.select('body').events('keydown'))
+    sources.DOM.select('body').events('keydown').compose(keyToSteps),
   ).map(step => ({ add: true, step }));
 
   const stop$ = xs.merge(
     keyboard.stop,
-    keyToSteps(sources.DOM.select('body').events('keyup'))
+    sources.DOM.select('body').events('keyup').compose(keyToSteps),
   ).map(step => ({ remove: true, step }))
 
   const notes$ = xs
