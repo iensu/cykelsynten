@@ -31,7 +31,7 @@ export default function Oscillator(sources) {
         .map(controls => xs.combine(props$, ...controls.map(c => c.value)))
         .flatten()
         .map(([props, waveform, gain, detune]) => ({
-          labeltext: props.labeltext, waveform, gain, detune
+          label: props.label, waveform, gain, detune
         }))
         .remember();
 

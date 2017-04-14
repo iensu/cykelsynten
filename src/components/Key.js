@@ -16,7 +16,6 @@ export default function Key(sources) {
       '.sharp': key.match(/[b#]$/),
       '.pressed': isPressed
     });
-    console.log(classes);
 
     return li(classes, button('.key', key))
   })
