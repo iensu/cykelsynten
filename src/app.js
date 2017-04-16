@@ -4,6 +4,7 @@ import xs from 'xstream';
 import { log, toHertz } from './utils';
 import Keyboard from './components/Keyboard';
 import Oscillator from './components/Oscillator';
+import Filter from './components/Filter';
 
 function keyToSteps(keySource$) {
   const baseStep = 3; // 0 = A, 3 = C
@@ -32,6 +33,14 @@ export function App(sources) {
       })
     })
   ));
+  const filter = Filter({
+    DOM: sources.DOM,
+    props: xs.of({
+      filterType: 'bandpass',
+      frequency: 5000,
+      Q: 1
+    })
+  });
 
   const play$ = xs.merge(
     keyboard.play,
@@ -55,13 +64,18 @@ export function App(sources) {
     notes$.map(notes => ({
       type: 'notes',
       payload: { value: notes }
+    })),
+    filter.value.map(filterValues => ({
+      type: 'filter',
+      payload: filterValues
     }))
   );
 
-  const vdom$ = xs.combine(keyboard.DOM, ...oscillators.map(o => o.DOM))
-        .map(([keyboardDOM, ...oscillatorDOMs]) => (
+  const vdom$ = xs.combine(keyboard.DOM, filter.DOM, ...oscillators.map(o => o.DOM))
+        .map(([keyboardDOM, filterDOM, ...oscillatorDOMs]) => (
           div('.synth', [
             div('.synth-oscillators', oscillatorDOMs),
+            filterDOM,
             keyboardDOM
           ])));
 

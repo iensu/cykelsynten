@@ -3,7 +3,7 @@ import xs from 'xstream';
 import sampleCombine from 'xstream/extra/sampleCombine';
 import { diff, toHertz } from '../utils';
 
-function createOscillator(audioContext, note) {
+function createOscillator(audioContext, destination, note) {
   return (config) => {
     const gainNode = createGain(audioContext)(config);
     const oscillator = audioContext.createOscillator();
@@ -13,7 +13,7 @@ function createOscillator(audioContext, note) {
     oscillator.frequency.value = toHertz(440)(note);
 
     oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    gainNode.connect(destination);
 
     return oscillator;
   };
@@ -30,6 +30,10 @@ function createGain(audioContext) {
 const WebAudioDriver = audioContext => {
   const runningOscillators = {};
 
+  const filter = audioContext.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.connect(audioContext.destination);
+
   return (instructions$) => {
     const oscillatorSettings$ = instructions$
       .filter(x => x.type === 'oscillator')
@@ -40,7 +44,19 @@ const WebAudioDriver = audioContext => {
 
     const notes$ = instructions$
       .filter(x => x.type === 'notes')
-      .map(x => x.payload)
+          .map(x => x.payload)
+
+    const filter$ = instructions$
+          .filter(x => x.type === 'filter')
+          .map(x => x.payload);
+
+    filter$.debug().subscribe({
+      next: ({ frequency, Q }) => {
+        filter.frequency.value = frequency;
+        filter.Q.value = Q;
+      },
+      error: e => console.log(e)
+    });
 
     const oscillators$ = notes$
       .compose(sampleCombine(oscillatorSettings$))
@@ -50,7 +66,6 @@ const WebAudioDriver = audioContext => {
         next: ([notes, oscillatorSettings]) => {
           const currNotes = notes.value;
           const prevNotes = Object.keys(runningOscillators).map(x => parseInt(x));
-
           const [toStop, toStart] = diff(prevNotes, currNotes);
 
           toStop.forEach(note => {
@@ -61,11 +76,11 @@ const WebAudioDriver = audioContext => {
           toStart.forEach(note => {
             const oscillators = Object.keys(oscillatorSettings)
                   .map(key => oscillatorSettings[key])
-                  .map(createOscillator(audioContext, note));
+                  .map(createOscillator(audioContext, filter, note));
 
             oscillators.forEach(o => o.start());
             runningOscillators[note] = oscillators;
-          })
+          });
         },
         error: e => console.log(e.code)
       });
