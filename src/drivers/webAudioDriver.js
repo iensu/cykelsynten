@@ -1,8 +1,7 @@
 import { adapt } from '@cycle/run/lib/adapt';
 import xs from 'xstream';
 import sampleCombine from 'xstream/extra/sampleCombine';
-import pairwise from 'xstream/extra/pairwise'
-import { toHertz } from '../utils';
+import { diff, toHertz } from '../utils';
 
 function createOscillator(audioContext, note) {
   return (config) => {
@@ -28,70 +27,53 @@ function createGain(audioContext) {
   }
 }
 
-function setupOscillators(audioContext) {
-  return ([ notes, oscillatorSettings ]) => {
-    return notes.value
-      .map(note => {
-        const oscillators = Object.keys(oscillatorSettings)
-              .map(key => oscillatorSettings[key])
-              .map(createOscillator(audioContext, note))
+const WebAudioDriver = audioContext => {
+  const runningOscillators = {};
 
-        return { note, oscillators };
-      })
-      .reduce((result, { note, oscillators }) => Object.assign({}, result, {
-        [note]: oscillators
-      }), {});
-  };
-}
+  return (instructions$) => {
+    const oscillatorSettings$ = instructions$
+      .filter(x => x.type === 'oscillator')
+      .map(x => x.payload)
+      .fold((oscillators, oscillator) => Object.assign({}, oscillators, {
+        [oscillator.label]: oscillator
+      }));
 
-const tryStop = (oscillator) => {
-  try {
-    oscillator.stop();
-  } catch (e) {
-    if (e.code !== 11) throw e; // 11 = Oscillator not started!
-    oscillator.start();
-    oscillator.stop();
-  }
-}
+    const notes$ = instructions$
+      .filter(x => x.type === 'notes')
+      .map(x => x.payload)
 
-const WebAudioDriver = audioContext => (instructions$) => {
-  const oscillatorSettings$ = instructions$
-        .filter(x => x.type === 'oscillator')
-        .map(x => x.payload)
-        .fold((oscillators, oscillator) => Object.assign({}, oscillators, {
-          [oscillator.label]: oscillator
-        }));
+    const oscillators$ = notes$
+      .compose(sampleCombine(oscillatorSettings$))
 
-  const notes$ = instructions$
-        .filter(x => x.type === 'notes')
-        .map(x => x.payload)
+    oscillators$
+      .subscribe({
+        next: ([notes, oscillatorSettings]) => {
+          const currNotes = notes.value;
+          const prevNotes = Object.keys(runningOscillators).map(x => parseInt(x));
 
-  const oscillators$ = notes$
-        .compose(sampleCombine(oscillatorSettings$))
-        .map(setupOscillators(audioContext))
+          const [toStop, toStart] = diff(prevNotes, currNotes);
 
-  oscillators$
-    .compose(pairwise)
-    .subscribe({
-      next: ([prevOscillators, currOscillators]) => {
-        const currNotes = Object.keys(currOscillators);
-        const prevNotes = Object.keys(prevOscillators);
-        const toStart = currNotes.filter(n => !prevNotes.includes(n));
-        const toStop = prevNotes.filter(n => !currNotes.includes(n));
-        console.log(toStart, toStop)
+          toStop.forEach(note => {
+            runningOscillators[note].map(o => o.stop());
+            delete runningOscillators[note];
+          });
 
-        toStop.forEach(note => prevOscillators[note].map(tryStop));
-        toStart.forEach(note => currOscillators[note].map(o => {
-          o.start();
-          o.stop(audioContext.currentTime + 3);
-        }))
-      },
-      error: e => console.log(e.code)
-    });
+          toStart.forEach(note => {
+            const oscillators = Object.keys(oscillatorSettings)
+                  .map(key => oscillatorSettings[key])
+                  .map(createOscillator(audioContext, note));
 
-  return {
-    notes: notes$.map(n => n.value),
-    oscillatorSettings: oscillatorSettings$
+            oscillators.forEach(o => o.start());
+            runningOscillators[note] = oscillators;
+          })
+        },
+        error: e => console.log(e.code)
+      });
+
+    return {
+      notes: notes$.map(n => n.value),
+      oscillatorSettings: oscillatorSettings$
+    }
   }
 };
 
