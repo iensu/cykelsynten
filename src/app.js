@@ -1,4 +1,4 @@
-import { button, div, li, ul } from '@cycle/dom';
+import { button, div } from '@cycle/dom';
 import isolate from '@cycle/isolate';
 import xs from 'xstream';
 import { log, toHertz } from './utils';
@@ -75,8 +75,10 @@ export function App(sources) {
         .map(([keyboardDOM, filterDOM, ...oscillatorDOMs]) => (
           div('.synth', [
             div('.synth-oscillators', oscillatorDOMs),
-            filterDOM,
-            keyboardDOM
+            div('.keyboard-wrapper', [
+              filterDOM,
+              keyboardDOM,
+            ]),
           ])));
 
   return {

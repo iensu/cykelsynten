@@ -25,7 +25,7 @@ export default function Keyboard(sources) {
   const stop$ = play$.compose(delay(noteDuration));
 
   const vdom$ = xs.combine(...keys.map(key => key.DOM))
-        .map((keyDoms) => ul(keyDoms));
+        .map((keyDoms) => ul('.keyboard', keyDoms));
 
   return {
     DOM: vdom$,
