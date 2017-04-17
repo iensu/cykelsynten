@@ -1,5 +1,3 @@
-import { adapt } from '@cycle/run/lib/adapt';
-import xs from 'xstream';
 import sampleCombine from 'xstream/extra/sampleCombine';
 import { diff, toHertz } from '../utils';
 
@@ -24,7 +22,7 @@ function createGain(audioContext) {
     const gainNode = audioContext.createGain();
     gainNode.gain.value = gain;
     return gainNode;
-  }
+  };
 }
 
 const WebAudioDriver = audioContext => {
@@ -44,7 +42,7 @@ const WebAudioDriver = audioContext => {
 
     const notes$ = instructions$
       .filter(x => x.type === 'notes')
-          .map(x => x.payload)
+          .map(x => x.payload);
 
     const filter$ = instructions$
           .filter(x => x.type === 'filter')
@@ -55,11 +53,11 @@ const WebAudioDriver = audioContext => {
         filter.frequency.value = frequency;
         filter.Q.value = Q;
       },
-      error: e => console.log(e)
+            error: e => console.log(e) // eslint-disable-line
     });
 
     const oscillators$ = notes$
-      .compose(sampleCombine(oscillatorSettings$))
+      .compose(sampleCombine(oscillatorSettings$));
 
     oscillators$
       .subscribe({
@@ -82,14 +80,14 @@ const WebAudioDriver = audioContext => {
             runningOscillators[note] = oscillators;
           });
         },
-        error: e => console.log(e.code)
+          error: e => console.log(e.code) // eslint-disable-line
       });
 
     return {
       notes: notes$.map(n => n.value),
       oscillatorSettings: oscillatorSettings$
-    }
-  }
+    };
+  };
 };
 
 

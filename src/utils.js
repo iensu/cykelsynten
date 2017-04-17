@@ -1,6 +1,6 @@
 export const toHertz = f0 => semitoneStep => {
-  const a = 2 ** (1/12);
-  return f0 * (a ** semitoneStep);
+  const a = Math.pow(2, (1/12));
+  return f0 * Math.pow(a, semitoneStep);
 };
 
 export const classnames = (propsObj) =>

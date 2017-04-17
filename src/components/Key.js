@@ -18,8 +18,8 @@ export default function Key(sources) {
       '.pressed': isPressed
     });
 
-    return li(classes, button('.key', key))
-  })
+    return li(classes, button('.key', key));
+  });
 
   return {
     DOM: vdom$,

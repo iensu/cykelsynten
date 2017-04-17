@@ -1,7 +1,6 @@
-import { button, div } from '@cycle/dom';
+import { div } from '@cycle/dom';
 import isolate from '@cycle/isolate';
 import xs from 'xstream';
-import { log, toHertz } from './utils';
 import Keyboard from './components/Keyboard';
 import Oscillator from './components/Oscillator';
 import Filter from './components/Filter';
@@ -44,20 +43,20 @@ export function App(sources) {
 
   const play$ = xs.merge(
     keyboard.play,
-    sources.DOM.select('body').events('keydown').compose(keyToSteps),
+    sources.DOM.select('body').events('keydown').compose(keyToSteps)
   ).map(step => ({ add: true, step }));
 
   const stop$ = xs.merge(
     keyboard.stop,
-    sources.DOM.select('body').events('keyup').compose(keyToSteps),
-  ).map(step => ({ remove: true, step }))
+    sources.DOM.select('body').events('keyup').compose(keyToSteps)
+  ).map(step => ({ remove: true, step }));
 
   const notes$ = xs
         .merge(play$, stop$)
         .fold((activeSteps, { add, step }) => add && !activeSteps.includes(step) ? [...activeSteps, step] : activeSteps.filter(s => s !== step), []);
 
   const instructions$ = xs.merge(
-    ...oscillators.map((o, idx) => o.value.map(oscillatorValues => ({
+    ...oscillators.map(o => o.value.map(oscillatorValues => ({
       type: 'oscillator',
       payload: oscillatorValues
     }))),
@@ -77,7 +76,7 @@ export function App(sources) {
             div('.synth-oscillators', oscillatorDOMs),
             div('.keyboard-wrapper', [
               filterDOM,
-              keyboardDOM,
+              keyboardDOM
             ]),
           ])));
 

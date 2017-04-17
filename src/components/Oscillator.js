@@ -1,4 +1,4 @@
-import {div, span, fieldset, legend, label } from '@cycle/dom'
+import {div, fieldset, legend } from '@cycle/dom';
 import isolate from '@cycle/isolate';
 import xs from 'xstream';
 import { waveforms } from '../constants';
