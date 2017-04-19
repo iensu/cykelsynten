@@ -25,9 +25,9 @@ export function App(sources) {
     isolate(Oscillator)({
       DOM: sources.DOM,
       props: xs.of({
-        waveform: 'square',
+        waveform: 'sine',
         detune: 0,
-        gain: 0.5,
+        gain: 0.3,
         label: `osc-${id}`
       })
     })
