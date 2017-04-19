@@ -21,13 +21,13 @@ export function App(sources) {
     DOM: sources.DOM,
     playingNotes: sources.Audio.notes
   });
-  const oscillators = [1, 2, 3].map(id => (
+  const oscillators = [1, 2].map(id => (
     isolate(Oscillator)({
       DOM: sources.DOM,
       props: xs.of({
-        waveform: 'square',
+        waveform: 'sine',
         detune: 0,
-        gain: 0.5,
+        gain: 0.3,
         label: `osc-${id}`
       })
     })
@@ -35,8 +35,8 @@ export function App(sources) {
   const filter = Filter({
     DOM: sources.DOM,
     props: xs.of({
-      filterType: 'bandpass',
-      frequency: 5000,
+      filterType: 'lowpass',
+      frequency: 2000,
       Q: 1
     })
   });
