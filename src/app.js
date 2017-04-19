@@ -74,8 +74,6 @@ export function App(sources) {
     }))
   );
 
-  // sources.Audio.frequencyData.subscribe({ next: x => console.log(x) });
-
   const vdom$ = xs.combine(keyboard.DOM, filter.DOM, ...oscillators.map(o => o.DOM))
         .map(([keyboardDOM, filterDOM, ...oscillatorDOMs]) => (
           div('.synth', [
@@ -88,6 +86,7 @@ export function App(sources) {
 
   return {
     DOM: vdom$,
-    Audio: instructions$
+    Audio: instructions$,
+    Canvas: sources.Audio.timeDomainData
   };
 }

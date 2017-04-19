@@ -2,7 +2,7 @@ import xs from 'xstream';
 
 let rafId;
 
-export default function RequestAnimationFrameDriver() {
+function RequestAnimationFrameDriver() {
   function tick(cb) {
     return (timestamp) => {
       cb(timestamp);
@@ -20,4 +20,8 @@ export default function RequestAnimationFrameDriver() {
   };
 
   return xs.create(producer);
+}
+
+export function makeRAFDriver() {
+  return RequestAnimationFrameDriver;
 }

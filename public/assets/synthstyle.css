@@ -201,3 +201,11 @@ button:focus,
   top: 0;
   left: auto;
 }
+
+#audio-canvas {
+  position: absolute;
+  right: 0;
+  top: 0;
+  float: left;
+  border: solid 1px black;
+}

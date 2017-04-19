@@ -2,7 +2,8 @@ import {run} from '@cycle/run';
 import {makeDOMDriver} from '@cycle/dom';
 import {App} from './app';
 import { makeWebAudioDriver } from './drivers/webAudioDriver';
-import rafDriver from './drivers/requestAnimationFrameDriver';
+import { makeRAFDriver } from './drivers/requestAnimationFrameDriver';
+import { makeAudioCanvasDriver } from './drivers/audioCanvasDriver';
 
 const audioContext = new AudioContext();
 const main = App;
@@ -10,7 +11,8 @@ const main = App;
 const drivers = {
   DOM: makeDOMDriver('#app'),
   Audio: makeWebAudioDriver(audioContext),
-  RAF: rafDriver
+  RAF: makeRAFDriver(),
+  Canvas: makeAudioCanvasDriver('audio-canvas')
 };
 
 run(main, drivers);
