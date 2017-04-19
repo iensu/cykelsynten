@@ -8,7 +8,7 @@ function createOscillator(audioContext, destination, note) {
 
     oscillator.type = config.waveform;
     oscillator.detune.value = config.detune;
-    oscillator.frequency.value = toHertz(440)(note);
+    oscillator.frequency.value = toHertz(440)(note - 12);
 
     oscillator.connect(gainNode);
     gainNode.connect(destination);
