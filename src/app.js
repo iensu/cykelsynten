@@ -67,6 +67,10 @@ export function App(sources) {
     filter.value.map(filterValues => ({
       type: 'filter',
       payload: filterValues
+    })),
+    sources.RAF.map(timestamp => ({
+      type: 'tick',
+      payload: timestamp
     }))
   );
 
@@ -82,6 +86,7 @@ export function App(sources) {
 
   return {
     DOM: vdom$,
-    Audio: instructions$
+    Audio: instructions$,
+    Canvas: sources.Audio.timeDomainData
   };
 }
