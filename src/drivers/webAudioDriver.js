@@ -25,12 +25,23 @@ function createGain(audioContext) {
   };
 }
 
+function connectNodes(...nodes) {
+  return nodes.reverse().reduce((node1, node2) => {
+    node2.connect(node1);
+    return node2;
+  });
+}
+
 const WebAudioDriver = audioContext => {
   const runningOscillators = {};
 
   const filter = audioContext.createBiquadFilter();
   filter.type = 'bandpass';
-  filter.connect(audioContext.destination);
+
+  const analyser = audioContext.createAnalyser();
+  const analyserData = new Uint8Array(analyser.frequencyBinCount);
+
+  const destinationNode = connectNodes(filter, analyser, audioContext.destination);
 
   return (instructions$) => {
     const oscillatorSettings$ = instructions$
@@ -41,19 +52,22 @@ const WebAudioDriver = audioContext => {
       }));
 
     const notes$ = instructions$
-      .filter(x => x.type === 'notes')
+          .filter(x => x.type === 'notes')
           .map(x => x.payload);
 
     const filter$ = instructions$
           .filter(x => x.type === 'filter')
           .map(x => x.payload);
 
+    const tick$ = instructions$
+          .filter(x => x.type === 'tick');
+
     filter$.debug().subscribe({
       next: ({ frequency, Q }) => {
         filter.frequency.value = frequency;
         filter.Q.value = Q;
       },
-            error: e => console.log(e) // eslint-disable-line
+      error: e => console.log(e) // eslint-disable-line
     });
 
     const oscillators$ = notes$
@@ -74,7 +88,7 @@ const WebAudioDriver = audioContext => {
           toStart.forEach(note => {
             const oscillators = Object.keys(oscillatorSettings)
                   .map(key => oscillatorSettings[key])
-                  .map(createOscillator(audioContext, filter, note));
+                  .map(createOscillator(audioContext, destinationNode, note));
 
             oscillators.forEach(o => o.start());
             runningOscillators[note] = oscillators;
@@ -85,7 +99,11 @@ const WebAudioDriver = audioContext => {
 
     return {
       notes: notes$.map(n => n.value),
-      oscillatorSettings: oscillatorSettings$
+      oscillatorSettings: oscillatorSettings$,
+      frequencyData: tick$.map(() => {
+        analyser.getByteFrequencyData(analyserData);
+        return analyserData;
+      })
     };
   };
 };

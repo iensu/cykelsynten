@@ -67,8 +67,14 @@ export function App(sources) {
     filter.value.map(filterValues => ({
       type: 'filter',
       payload: filterValues
+    })),
+    sources.RAF.map(timestamp => ({
+      type: 'tick',
+      payload: timestamp
     }))
   );
+
+  // sources.Audio.frequencyData.subscribe({ next: x => console.log(x) });
 
   const vdom$ = xs.combine(keyboard.DOM, filter.DOM, ...oscillators.map(o => o.DOM))
         .map(([keyboardDOM, filterDOM, ...oscillatorDOMs]) => (
