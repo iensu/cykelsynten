@@ -21,7 +21,7 @@ export function App(sources) {
     DOM: sources.DOM,
     playingNotes: sources.Audio.notes
   });
-  const oscillators = [1, 2, 3].map(id => (
+  const oscillators = [1, 2].map(id => (
     isolate(Oscillator)({
       DOM: sources.DOM,
       props: xs.of({
