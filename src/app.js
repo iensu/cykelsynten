@@ -35,8 +35,8 @@ export function App(sources) {
   const filter = Filter({
     DOM: sources.DOM,
     props: xs.of({
-      filterType: 'bandpass',
-      frequency: 5000,
+      filterType: 'lowpass',
+      frequency: 2000,
       Q: 1
     })
   });
