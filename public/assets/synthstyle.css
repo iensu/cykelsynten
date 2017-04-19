@@ -203,9 +203,9 @@ button:focus,
 }
 
 #audio-canvas {
-  position: absolute;
-  right: 0;
-  top: 0;
+  position: fixed;
+  right: 10%;
+  top: 10%;
   float: left;
-  border: solid 1px black;
+  border-radius: 50%;
 }

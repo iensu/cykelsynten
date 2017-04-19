@@ -7,8 +7,11 @@ function AudioCanvasDriver(canvas) {
     data$.subscribe({
       next: (data) => {
         context.clearRect(0, 0, WIDTH, HEIGHT);
+        context.fillStyle = 'rgb(30, 30, 30)';
+        context.fillRect(0, 0, WIDTH, HEIGHT);
+
         context.lineWidth = 1;
-        context.strokeStyle = 'rgb(0, 0, 0)';
+        context.strokeStyle = 'rgb(128, 200, 0)';
         context.beginPath();
 
         const sliceWidth = WIDTH * 1.0 / data.length;
@@ -32,7 +35,7 @@ function AudioCanvasDriver(canvas) {
   };
 }
 
-export function makeAudioCanvasDriver(elementId, width = 100, height = 100) {
+export function makeAudioCanvasDriver(elementId, width = 200, height = 200) {
   const element = document.getElementById(elementId);
   element.width = width;
   element.height = height;

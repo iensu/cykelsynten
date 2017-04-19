@@ -12,7 +12,7 @@ const drivers = {
   DOM: makeDOMDriver('#app'),
   Audio: makeWebAudioDriver(audioContext),
   RAF: makeRAFDriver(),
-  Canvas: makeAudioCanvasDriver('audio-canvas')
+  Canvas: makeAudioCanvasDriver('audio-canvas', 200, 170)
 };
 
 run(main, drivers);
