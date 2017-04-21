@@ -37,7 +37,8 @@ export function App(sources) {
     props: xs.of({
       filterType: 'bandpass',
       frequency: 2000,
-      Q: 1
+      Q: 1,
+      legend: 'filter'
     })
   });
 
@@ -76,7 +77,7 @@ export function App(sources) {
 
   const vdom$ = xs.combine(keyboard.DOM, filter.DOM, ...oscillators.map(o => o.DOM))
         .map(([keyboardDOM, filterDOM, ...oscillatorDOMs]) => (
-          div('.synth', [
+          div([
             div('.synth-oscillators', oscillatorDOMs),
             div('.keyboard-wrapper', [
               filterDOM,
