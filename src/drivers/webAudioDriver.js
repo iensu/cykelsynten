@@ -1,14 +1,14 @@
 import sampleCombine from 'xstream/extra/sampleCombine';
 import { diff, toHertz } from '../utils';
 
-function createOscillator(audioContext, destination, note) {
+function createOscillator(audioContext, destination, note, octave) {
   return (config) => {
     const gainNode = createGain(audioContext)(config);
     const oscillator = audioContext.createOscillator();
 
     oscillator.type = config.waveform;
     oscillator.detune.value = config.detune;
-    oscillator.frequency.value = toHertz(440)(note - 12);
+    oscillator.frequency.value = toHertz(440)(note + (octave * 12));
 
     oscillator.connect(gainNode);
     gainNode.connect(destination);
@@ -63,6 +63,10 @@ const WebAudioDriver = audioContext => {
 
     const tick$ = instructions$
           .filter(x => x.type === 'tick');
+    const octave$ = instructions$
+          .filter(x => x.type === 'octave')
+          .map(x => x.payload);
+
 
     filter$.subscribe({
       next: ({ frequency, Q }) => {
@@ -73,11 +77,11 @@ const WebAudioDriver = audioContext => {
     });
 
     const oscillators$ = notes$
-      .compose(sampleCombine(oscillatorSettings$));
+          .compose(sampleCombine(oscillatorSettings$, octave$));
 
     oscillators$
       .subscribe({
-        next: ([notes, oscillatorSettings]) => {
+        next: ([notes, oscillatorSettings, octave]) => {
           const currNotes = notes.value;
           const prevNotes = Object.keys(runningOscillators).map(x => parseInt(x));
           const [toStop, toStart] = diff(prevNotes, currNotes);
@@ -90,7 +94,7 @@ const WebAudioDriver = audioContext => {
           toStart.forEach(note => {
             const oscillators = Object.keys(oscillatorSettings)
                   .map(key => oscillatorSettings[key])
-                  .map(createOscillator(audioContext, destinationNode, note));
+                  .map(createOscillator(audioContext, destinationNode, note, octave));
 
             oscillators.forEach(o => o.start());
             runningOscillators[note] = oscillators;
