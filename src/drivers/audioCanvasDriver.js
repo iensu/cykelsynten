@@ -10,7 +10,7 @@ function AudioCanvasDriver(canvas) {
         context.fillStyle = 'rgb(30, 30, 30)';
         context.fillRect(0, 0, WIDTH, HEIGHT);
 
-        context.lineWidth = 1;
+        context.lineWidth = 3;
         context.strokeStyle = 'rgb(128, 200, 0)';
         context.beginPath();
 

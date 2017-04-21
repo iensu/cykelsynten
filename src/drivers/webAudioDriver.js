@@ -39,7 +39,8 @@ const WebAudioDriver = audioContext => {
   filter.type = 'bandpass';
 
   const analyser = audioContext.createAnalyser();
-  const frequencyData = new Uint8Array(analyser.frequencyBinCount);
+  analyser.fftSize = 256;
+
   const timeDomainData = new Uint8Array(analyser.frequencyBinCount);
 
   const destinationNode = connectNodes(filter, analyser, audioContext.destination);
@@ -101,10 +102,6 @@ const WebAudioDriver = audioContext => {
     return {
       notes: notes$.map(n => n.value),
       oscillatorSettings: oscillatorSettings$,
-      frequencyData: tick$.map(() => {
-        analyser.getByteFrequencyData(frequencyData);
-        return frequencyData;
-      }),
       timeDomainData: tick$.map(() => {
         analyser.getByteTimeDomainData(timeDomainData);
         return timeDomainData;
