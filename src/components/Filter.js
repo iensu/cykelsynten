@@ -31,7 +31,7 @@ export default function Filter(sources) {
         .flatten()
         .map(([props, ...controlsVdom]) => (
           fieldset('.filter', [
-            legend('.label', props.label),
+            legend(props.legend),
             div('.filter-controls', controlsVdom)
           ])
         ));

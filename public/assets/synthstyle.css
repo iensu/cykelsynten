@@ -10,6 +10,7 @@ body, html {
   max-width: 1200px;
   margin: 0 auto;
   padding: 60px 0;
+  position: relative;
 }
 .keyboard-wrapper {
   width: 1000px;
@@ -119,7 +120,6 @@ legend {
   transform: scale(1.1);
 }
 
-
 /* keys */
 .keyboard {
   overflow: hidden;
@@ -189,23 +189,22 @@ button:focus,
   height: 280px;
 }
 .filter .slider {
-  width: 230px;
-  writing-mode: bt-lr;
+  width: 205px;
+  height: 6px;
   transform:rotate(90deg);
   position: absolute;
-  top: 160px;
-  right: 0;
+  top: 154px;
+  right: 10px;
 }
 .filter label {
   position: absolute;
-  top: 0;
+  top: 10px;
   left: auto;
 }
 
 #audio-canvas {
-  position: fixed;
-  right: 10%;
-  top: 10%;
-  float: left;
+  position: absolute;
+  right: 100px;
+  top: 100px;
   border-radius: 50%;
 }
