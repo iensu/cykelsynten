@@ -9,4 +9,4 @@ A Synthesizer built in [Cycle.js](https://cycle.js.org/) using the Web Audio API
 1. Go to [http://localhost:8000](http://localhost:8000)
 1. Make some music!
 
-<h1>♫꒰･◡･๑꒱</h1>
+# ♫꒰･◡･๑꒱
