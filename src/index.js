@@ -5,7 +5,7 @@ import { makeWebAudioDriver } from './drivers/webAudioDriver';
 import { makeRAFDriver } from './drivers/requestAnimationFrameDriver';
 import { makeAudioCanvasDriver } from './drivers/audioCanvasDriver';
 
-const audioContext = new AudioContext();
+const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 const main = App;
 
 const drivers = {
