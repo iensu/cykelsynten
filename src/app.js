@@ -28,6 +28,7 @@ export function App(sources) {
         waveform: 'sine',
         detune: 0,
         gain: 0.3,
+        octave: 0,
         label: `osc-${id}`
       })
     })
@@ -78,7 +79,7 @@ export function App(sources) {
   const vdom$ = xs.combine(keyboard.DOM, filter.DOM, ...oscillators.map(o => o.DOM))
         .map(([keyboardDOM, filterDOM, ...oscillatorDOMs]) => (
           div([
-            div('.synth-oscillators', oscillatorDOMs),
+            ...oscillatorDOMs.map(o => div('.oscillator', o)),
             div('.keyboard-wrapper', [
               filterDOM,
               keyboardDOM

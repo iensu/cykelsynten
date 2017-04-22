@@ -8,7 +8,7 @@ function createOscillator(audioContext, destination, note) {
 
     oscillator.type = config.waveform;
     oscillator.detune.value = config.detune;
-    oscillator.frequency.value = toHertz(440)(note - 12);
+    oscillator.frequency.value = toHertz(440)(note + (config.octave * 12));
 
     oscillator.connect(gainNode);
     gainNode.connect(destination);
@@ -73,7 +73,7 @@ const WebAudioDriver = audioContext => {
     });
 
     const oscillators$ = notes$
-      .compose(sampleCombine(oscillatorSettings$));
+          .compose(sampleCombine(oscillatorSettings$));
 
     oscillators$
       .subscribe({
