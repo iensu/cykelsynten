@@ -5,15 +5,23 @@ import Keyboard from './components/Keyboard';
 import Oscillator from './components/Oscillator';
 import Filter from './components/Filter';
 
-function keyToSteps(keySource$) {
-  const baseStep = 3; // 0 = A, 3 = C
+function keyToNote(keySource$) {
+  const baseNote = 3; // 0 = A, 3 = C
   const keyboardLayout = 'awsedftgyhujk';
 
   return keySource$
     .map(evt => evt.key)
     .map(key => keyboardLayout.indexOf(key))
-    .filter(step => step !== -1)
-    .map(step => step + baseStep);
+    .filter(note => note !== -1)
+    .map(note => note + baseNote);
+}
+
+function collectActiveNotes(activeNotes, { add, note }) {
+  if (add && !activeNotes.includes(note)) {
+    return [...activeNotes, note];
+  }
+
+  return activeNotes.filter(s => s !== note);
 }
 
 export function App(sources) {
@@ -45,17 +53,15 @@ export function App(sources) {
 
   const play$ = xs.merge(
     keyboard.play,
-    sources.DOM.select('body').events('keydown').compose(keyToSteps)
-  ).map(step => ({ add: true, step }));
+    sources.DOM.select('body').events('keydown').compose(keyToNote)
+  ).map(note => ({ add: true, note }));
 
   const stop$ = xs.merge(
     keyboard.stop,
-    sources.DOM.select('body').events('keyup').compose(keyToSteps)
-  ).map(step => ({ remove: true, step }));
+    sources.DOM.select('body').events('keyup').compose(keyToNote)
+  ).map(note => ({ remove: true, note }));
 
-  const notes$ = xs
-        .merge(play$, stop$)
-        .fold((activeSteps, { add, step }) => add && !activeSteps.includes(step) ? [...activeSteps, step] : activeSteps.filter(s => s !== step), []);
+  const notes$ = xs.merge(play$, stop$).fold(collectActiveNotes, []);
 
   const instructions$ = xs.merge(
     ...oscillators.map(o => o.value.map(oscillatorValues => ({
