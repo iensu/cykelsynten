@@ -44,7 +44,7 @@ export default function Oscillator(sources) {
         .map(controls => xs.combine(props$, ...controls.map(c => c.DOM)))
         .flatten()
         .map(([props, ...controlsVdom]) => (
-          fieldset('.oscillator', [
+          fieldset([
             legend('.label', props.label),
             div('.oscillator-controls', controlsVdom)
           ])

@@ -77,10 +77,9 @@ export function App(sources) {
   );
 
   const vdom$ = xs.combine(keyboard.DOM, filter.DOM, ...oscillators.map(o => o.DOM))
-        .map(([keyboardDOM, filterDOM, octaveSelectorDOM, ...oscillatorDOMs]) => (
+        .map(([keyboardDOM, filterDOM, ...oscillatorDOMs]) => (
           div([
-            div('.synth-oscillators', oscillatorDOMs),
-            div('.octave-selector', octaveSelectorDOM),
+            ...oscillatorDOMs.map(o => div('.oscillator', o)),
             div('.keyboard-wrapper', [
               filterDOM,
               keyboardDOM

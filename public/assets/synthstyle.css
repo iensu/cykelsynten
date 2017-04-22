@@ -13,6 +13,7 @@ body, html {
   position: relative;
 }
 .keyboard-wrapper {
+  clear: both;
   width: 1000px;
   margin: 0 auto;
 }
@@ -33,6 +34,7 @@ legend {
 }
 .labeled-selector {
   position: relative;
+  float: left;
 }
 .labeled-selector:after {
   content: '';
@@ -179,18 +181,21 @@ button:focus,
 }
 
 /* oscillators */
-.synth-oscillators {
-  overflow: hidden;
-  margin-bottom: 40px;
-}
-@media (min-width: 600px){
-  .synth-oscillators {
-    padding-left: 100px;
-  }
-}
 .oscillator {
   width: 350px;
   float: left;
+  margin-bottom: 40px;
+}
+.oscillator-controls .labeled-selector {
+  padding-right: 49px;
+}
+.oscillator-controls .labeled-slider{
+  clear: both;
+}
+@media (min-width: 600px){
+  .oscillator {
+    padding-left: 100px;
+  }
 }
 
 /* octave */
