@@ -62,6 +62,7 @@ legend {
   font-size: 1em;
   background: transparent;
   color: #222;
+  min-width: 120px;
   outline: 0;
   appearance: none;
   -webkit-appearance: none;
@@ -129,8 +130,13 @@ legend {
 li {
   list-style: none;
   height: 300px;
-  width: 90px;
+  width: 60px;
   float: left;
+}
+@media (min-width: 600px){
+  li {
+    width: 90px;
+  }
 }
 li:not(:last-child) button {
   border-right: none;
@@ -150,11 +156,18 @@ button {
   border-radius: 5px;
 }
 .sharp {
-  width: 60px;
-  margin-left: -30px;
-  margin-right: -30px;
+  width: 30px;
+  margin-left: -15px;
+  margin-right: -15px;
   position: relative;
   z-index: 1;
+}
+@media (min-width: 600px){
+  .sharp {
+    width: 60px;
+    margin-left: -30px;
+    margin-right: -30px;
+  }
 }
 button:focus,
 .sharp button:focus,
@@ -169,18 +182,33 @@ button:focus,
 .synth-oscillators {
   overflow: hidden;
   margin-bottom: 40px;
-  padding-left: 100px;
+}
+@media (min-width: 600px){
+  .synth-oscillators {
+    padding-left: 100px;
+  }
 }
 .oscillator {
   width: 350px;
   float: left;
 }
 
+/* octave */
+.octave-selector {
+  position: absolute;
+  top: 100px;
+  right: 450px;
+}
+
 /* filter */
 .filter {
   overflow: hidden;
   width: 280px;
-  float: left;
+}
+@media (min-width: 600px){
+  .filter {
+    float: left;
+  }
 }
 .filter .labeled-slider {
   float: left;
@@ -203,8 +231,12 @@ button:focus,
 }
 
 #audio-canvas {
-  position: absolute;
-  right: 100px;
-  top: 100px;
   border-radius: 50%;
+}
+@media (min-width: 600px){
+  #audio-canvas {
+    position: absolute;
+    right: 100px;
+    top: 100px;
+  }
 }
