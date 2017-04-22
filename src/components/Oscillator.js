@@ -8,14 +8,19 @@ import LabeledSelector from './LabeledSelector';
 export default function Oscillator(sources) {
   const props$ = sources.props.remember();
   const Waveform = isolate(LabeledSelector);
+  const Octave = isolate(LabeledSelector);
   const Gain = isolate(LabeledSlider);
   const Detune = isolate(LabeledSlider);
 
   const controls$ = props$
-        .map(({ waveform, detune, gain }) => [
+        .map(({ waveform, detune, gain, octave }) => [
           Waveform({
             DOM: sources.DOM,
             props: xs.of({ labeltext: 'Waveform', options: waveforms, value: waveform })
+          }),
+          Octave({
+            DOM: sources.DOM,
+            props: xs.of({ labeltext: 'Octave', options: [-2, -1, 0, 1, 2], value: octave })
           }),
           Gain({
             DOM: sources.DOM,
@@ -30,8 +35,8 @@ export default function Oscillator(sources) {
   const value$ = controls$
         .map(controls => xs.combine(props$, ...controls.map(c => c.value)))
         .flatten()
-        .map(([props, waveform, gain, detune]) => ({
-          label: props.label, waveform, gain, detune
+        .map(([props, waveform, octave, gain, detune]) => ({
+          label: props.label, waveform, gain, detune, octave: parseInt(octave)
         }))
         .remember();
 

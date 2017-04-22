@@ -4,7 +4,6 @@ import xs from 'xstream';
 import Keyboard from './components/Keyboard';
 import Oscillator from './components/Oscillator';
 import Filter from './components/Filter';
-import LabeledSelector from './components/LabeledSelector';
 
 function keyToSteps(keySource$) {
   const baseStep = 3; // 0 = A, 3 = C
@@ -29,6 +28,7 @@ export function App(sources) {
         waveform: 'sine',
         detune: 0,
         gain: 0.3,
+        octave: 0,
         label: `osc-${id}`
       })
     })
@@ -41,14 +41,6 @@ export function App(sources) {
       Q: 1,
       legend: 'filter'
     })
-  });
-  const octaveSelector = isolate(LabeledSelector)({
-    DOM: sources.DOM,
-    props: xs.of({
-      labeltext: 'Octave',
-      options: [-2, -1, 0, 1, 2],
-      value: 0,
-    }),
   });
 
   const play$ = xs.merge(
@@ -81,14 +73,10 @@ export function App(sources) {
     sources.RAF.map(timestamp => ({
       type: 'tick',
       payload: timestamp
-    })),
-    octaveSelector.value.map(value => ({
-      type: 'octave',
-      payload: value,
     }))
   );
 
-  const vdom$ = xs.combine(keyboard.DOM, filter.DOM, octaveSelector.DOM, ...oscillators.map(o => o.DOM))
+  const vdom$ = xs.combine(keyboard.DOM, filter.DOM, ...oscillators.map(o => o.DOM))
         .map(([keyboardDOM, filterDOM, octaveSelectorDOM, ...oscillatorDOMs]) => (
           div([
             div('.synth-oscillators', oscillatorDOMs),
