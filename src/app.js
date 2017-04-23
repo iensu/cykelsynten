@@ -76,10 +76,7 @@ export function App(sources) {
       type: 'filter',
       payload: filterValues
     })),
-    sources.RAF.map(timestamp => ({
-      type: 'tick',
-      payload: timestamp
-    }))
+    sources.Time.animationFrames().mapTo({ type: 'tick' })
   );
 
   const vdom$ = xs.combine(keyboard.DOM, filter.DOM, ...oscillators.map(o => o.DOM))
