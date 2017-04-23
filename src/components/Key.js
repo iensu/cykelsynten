@@ -8,11 +8,11 @@ const NOTE_STRINGS = [
 export default function Key(sources) {
   const props$ = sources.props.remember();
   const value$ = sources.DOM.select('.key').events('click')
-        .map(() => props$.map(({ step }) => step).take(1))
+        .map(() => props$.map(({ note }) => note).take(1))
         .flatten();
 
-  const vdom$ = props$.map(({ step, isPressed }) => {
-    const key = NOTE_STRINGS[step % 12];
+  const vdom$ = props$.map(({ note, isPressed }) => {
+    const key = NOTE_STRINGS[note % 12];
     const classes = classnames({
       '.sharp': key.match(/[b#]$/),
       '.pressed': isPressed
