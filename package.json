@@ -19,7 +19,6 @@
     "postinstall": "webpack",
     "develop": "cycle-scripts start",
     "test": "cycle-scripts test",
-    "build": "cycle-scripts build",
     "eject": "cycle-scripts eject",
     "lint": "eslint server.js src/"
   },
