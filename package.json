@@ -1,5 +1,5 @@
 {
-  "name": "synth",
+  "name": "cykelsynten",
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
@@ -15,11 +15,13 @@
     "xstream": "^10.5.0"
   },
   "scripts": {
-    "start": "cycle-scripts start",
+    "start": "node server.js",
+    "postinstall": "webpack",
+    "develop": "cycle-scripts start",
     "test": "cycle-scripts test",
     "build": "cycle-scripts build",
     "eject": "cycle-scripts eject",
-    "lint": "eslint ."
+    "lint": "eslint server.js src/"
   },
   "babel": {
     "presets": [
