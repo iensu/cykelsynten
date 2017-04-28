@@ -1,26 +1,25 @@
+const path = require('path');
 const webpack = require('webpack');
 
 module.exports = {
   entry: [
-    './src/'
+    path.join(__dirname, './src/')
   ],
   output: {
     filename: 'bundle.js',
-    path: './public/'
+    path: path.join(__dirname, './public/'),
   },
   module: {
     loaders: [
       {
         test: /\.js$/,
-        loader: 'babel',
+        loader: 'babel-loader',
         query: {
-          presets: ['es2015']
+          presets: ['es2016']
         },
         exclude: /node_modules/
       }
     ]
   },
-  plugins: [
-    new webpack.optimize.UglifyJsPlugin({minimize: true})
-  ]
+  plugins: []
 };
