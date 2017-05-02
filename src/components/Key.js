@@ -1,4 +1,5 @@
 import {li, button} from '@cycle/dom';
+import xs from 'xstream';
 import {classnames} from '../utils';
 
 const NOTE_STRINGS = [
@@ -6,8 +7,16 @@ const NOTE_STRINGS = [
 ];
 
 export default function Key(sources) {
+  const key$ = sources.DOM.select('.key');
   const props$ = sources.props.remember();
-  const value$ = sources.DOM.select('.key').events('click')
+
+  const down$ = xs.merge(key$.events('mousedown'), key$.events('touchstart'));
+  const up$ = xs.merge(key$.events('mouseup'), key$.events('touchend'));
+
+  const start$ = down$
+        .map(() => props$.map(({ note }) => note).take(1))
+        .flatten();
+  const stop$ = up$
         .map(() => props$.map(({ note }) => note).take(1))
         .flatten();
 
@@ -23,6 +32,7 @@ export default function Key(sources) {
 
   return {
     DOM: vdom$,
-    value: value$
+    start: start$,
+    stop: stop$
   };
 }
