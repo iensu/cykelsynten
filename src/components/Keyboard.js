@@ -1,7 +1,7 @@
 import { ul } from '@cycle/dom';
 import isolate from '@cycle/isolate';
 import xs from 'xstream';
-import Key from './key';
+import Key from './Key';
 
 const baseNote = 3; // 0 = A, 3 = C
 const numberOfKeys = 13;

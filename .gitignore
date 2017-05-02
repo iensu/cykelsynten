@@ -46,6 +46,7 @@ jspm_packages
 *.tgz
 
 build
+public/bundle.js
 
 # macOS folder file
 .DS_Store

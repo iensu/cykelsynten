@@ -1,5 +1,5 @@
 {
-  "name": "synth",
+  "name": "cykelsynten",
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
@@ -12,14 +12,19 @@
     "@cycle/dom": "^17.1.0",
     "@cycle/isolate": "^2.1.0",
     "@cycle/run": "^3.1.0",
+    "babel-core": "^6.24.1",
+    "babel-loader": "^7.0.0",
+    "express": "^4.15.2",
+    "webpack": "^2.4.1",
     "xstream": "^10.5.0"
   },
   "scripts": {
-    "start": "cycle-scripts start",
+    "start": "node server.js",
+    "postinstall": "webpack",
+    "develop": "cycle-scripts start",
     "test": "cycle-scripts test",
-    "build": "cycle-scripts build",
     "eject": "cycle-scripts eject",
-    "lint": "eslint ."
+    "lint": "eslint server.js src/"
   },
   "babel": {
     "presets": [
