@@ -2,7 +2,7 @@
 
 A Synthesizer built in [Cycle.js](https://cycle.js.org/) using the Web Audio API.
 
-You can try it out here: https://cykelsynten.herokuapp.com
+You can try it out here: <https://cykelsynten.fly.dev>
 
 # How to run
 
