@@ -1,0 +1,10 @@
+.eslintrc.json
+.git
+Dockerfile
+.dockerignore
+README.md
+LICENSE.md
+.nvmrc
+app.json
+.gitignore
+fly.toml
