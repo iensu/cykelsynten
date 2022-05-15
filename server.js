@@ -10,3 +10,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.listen(port, () => {
   console.log(`Cykelsynten is listening on port ${port}`); // eslint-disable-line
 });
+
+process.on("SIGINT", () => process.exit(0));
+process.on("SIGTERM", () => process.exit(0));
